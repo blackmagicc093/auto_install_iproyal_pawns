@@ -13,7 +13,7 @@ ALIAS_CMD="alias ip-menu='bash $SCRIPT_PATH'"
 
 # === TẢI FILE SCRIPT CHÍNH VỀ ĐÚNG VỊ TRÍ ===
 echo -e "${YELLOW}⬇️ Đang tải script cài đặt về...${RESET}"
-wget -q https://chat.openai.com/sandbox/attachments/install_iproyal.sh -O $SCRIPT_PATH
+wget -q https://raw.githubusercontent.com/blackmagicc093/auto_install_iproyal_pawns/refs/heads/main/install_iproyal.sh -O $SCRIPT_PATH
 chmod +x $SCRIPT_PATH
 
 # === THÊM ALIAS ip-menu VÀO ~/.bashrc (nếu chưa có) ===

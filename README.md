@@ -1,0 +1,2 @@
+# auto_install_iproyal_pawns
+auto_install_iproyal_pawns for ubuntu

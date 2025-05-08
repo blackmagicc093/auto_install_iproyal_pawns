@@ -1,12 +1,11 @@
-# Rewrite final full-feature script using the filename install_iproyal.sh as requested
-final_named_script = """#!/bin/bash
+#!/bin/bash
 
 # === Thông tin cấu hình ===
 ENV_FILE="$HOME/.iproyal.env"
 CONTAINER_NAME="iproyal-pawns"
 IMAGE_NAME="iproyal/pawns-cli:latest"
 SCRIPT_PATH="$HOME/install_iproyal.sh"
-RAW_URL="https://raw.githubusercontent.com/blackmagicc093/auto_install_iproyal_pawns/refs/heads/main/install_iproyal.sh"
+RAW_URL="https://chat.openai.com/sandbox/attachments/install_iproyal.sh"
 
 # === Cài đặt hệ thống và tạo container ===
 function setup() {
@@ -37,18 +36,18 @@ EOF
   docker stop $CONTAINER_NAME 2>/dev/null
   docker rm $CONTAINER_NAME 2>/dev/null
 
-  docker run -d \\
-    --name $CONTAINER_NAME \\
-    --restart=always \\
-    --env-file $ENV_FILE \\
-    $IMAGE_NAME \\
-    -email=$EMAIL \\
-    -password=$PASSWORD \\
-    -device-name=$DEVICE_NAME \\
-    -device-id=$DEVICE_ID \\
+  docker run -d \
+    --name $CONTAINER_NAME \
+    --restart=always \
+    --env-file $ENV_FILE \
+    $IMAGE_NAME \
+    -email=$EMAIL \
+    -password=$PASSWORD \
+    -device-name=$DEVICE_NAME \
+    -device-id=$DEVICE_ID \
     -accept-tos
 
-  echo -e "\\n✅ Cài đặt xong! Bạn có thể dùng menu để kiểm tra."
+  echo -e "\n✅ Cài đặt xong! Bạn có thể dùng menu để kiểm tra."
 }
 
 # === Kiểm tra container có chạy không ===
@@ -102,7 +101,7 @@ function setup_alias() {
 # === Menu chính ===
 function main_menu() {
   while true; do
-    echo -e "\\n🎛️ MENU IPRoyal Pawns CLI:"
+    echo -e "\n🎛️ MENU IPRoyal Pawns CLI:"
     echo "1) Kiểm tra container"
     echo "2) Xem log"
     echo "3) Kiểm tra earning"
@@ -127,11 +126,3 @@ function main_menu() {
 # === Bắt đầu ===
 setup_alias
 main_menu
-"""
-
-# Save the final script under the required filename
-install_script_path = "/mnt/data/install_iproyal.sh"
-with open(install_script_path, "w") as f:
-    f.write(final_named_script)
-
-install_script_path

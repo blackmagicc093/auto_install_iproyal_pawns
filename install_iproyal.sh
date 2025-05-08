@@ -1,58 +1,137 @@
-#!/bin/bash
+# Rewrite final full-feature script using the filename install_iproyal.sh as requested
+final_named_script = """#!/bin/bash
 
-echo "🔥 Preparing system for IPRoyal Pawns CLI setup..."
-sleep 1
+# === Thông tin cấu hình ===
+ENV_FILE="$HOME/.iproyal.env"
+CONTAINER_NAME="iproyal-pawns"
+IMAGE_NAME="iproyal/pawns-cli:latest"
+SCRIPT_PATH="$HOME/install_iproyal.sh"
+RAW_URL="https://raw.githubusercontent.com/blackmagicc093/auto_install_iproyal_pawns/refs/heads/main/install_iproyal.sh"
 
-# Update and upgrade system
-sudo apt update && sudo apt upgrade -y
+# === Cài đặt hệ thống và tạo container ===
+function setup() {
+  echo "🔥 Đang chuẩn bị hệ thống để cài đặt IPRoyal Pawns CLI..."
+  sleep 1
+  sudo apt update && sudo apt upgrade -y
+  sudo apt install -y docker.io
+  sudo systemctl enable --now docker
+  sudo usermod -aG docker $USER
 
-# Install Docker
-sudo apt install -y docker.io
-sudo systemctl enable --now docker
+  echo ""
+  read -p "👉 Nhập email IPRoyal của bạn: " EMAIL
+  read -sp "🔑 Nhập mật khẩu: " PASSWORD
+  echo ""
 
-# Add user to docker group
-sudo usermod -aG docker $USER
+  DEVICE_NAME=$(hostname)
+  DEVICE_ID=$(hostname)
 
-# Read user input
-read -p "👉 Enter your IPRoyal email: " EMAIL
-read -sp "🔑 Enter your IPRoyal password: " PASSWORD
-echo ""
-
-# Default device name/id from hostname
-DEVICE_NAME=$(hostname)
-DEVICE_ID=$(hostname)
-
-# Create .env file
-cat <<EOF > .env
+  # Tạo file cấu hình
+  cat <<EOF > $ENV_FILE
 EMAIL=$EMAIL
 PASSWORD=$PASSWORD
 DEVICE_NAME=$DEVICE_NAME
 DEVICE_ID=$DEVICE_ID
 EOF
 
-# Pull the latest image
-docker pull iproyal/pawns-cli:latest
+  docker pull $IMAGE_NAME
+  docker stop $CONTAINER_NAME 2>/dev/null
+  docker rm $CONTAINER_NAME 2>/dev/null
 
-# Stop and remove existing container (if any)
-docker stop iproyal-pawns 2>/dev/null
-docker rm iproyal-pawns 2>/dev/null
+  docker run -d \\
+    --name $CONTAINER_NAME \\
+    --restart=always \\
+    --env-file $ENV_FILE \\
+    $IMAGE_NAME \\
+    -email=$EMAIL \\
+    -password=$PASSWORD \\
+    -device-name=$DEVICE_NAME \\
+    -device-id=$DEVICE_ID \\
+    -accept-tos
 
-# Run container
-docker run -d \
-  --name iproyal-pawns \
-  --restart=always \
-  --env-file .env \
-  iproyal/pawns-cli:latest \
-  -email=$EMAIL \
-  -password=$PASSWORD \
-  -device-name=$DEVICE_NAME \
-  -device-id=$DEVICE_ID \
-  -accept-tos
+  echo -e "\\n✅ Cài đặt xong! Bạn có thể dùng menu để kiểm tra."
+}
 
-# Output results
-echo -e "\n✅ Done! You can check the container with: docker ps"
-echo "📜 View logs: docker logs -f iproyal-pawns"
-echo "🚀 Your device is now earning passively via IPRoyal!"
+# === Kiểm tra container có chạy không ===
+function check_container() {
+  if docker ps | grep -q $CONTAINER_NAME; then
+    echo "✅ Container '$CONTAINER_NAME' đang chạy."
+  else
+    echo "❌ Container '$CONTAINER_NAME' KHÔNG chạy."
+  fi
+}
 
-# Suggest logout/login if needed
-echo -e "\n⚠️ Please logout/login or reboot if Docker group changes don't take effect."
+# === Xem log container ===
+function view_logs() {
+  echo "📜 Log hoạt động (Ctrl+C để thoát):"
+  docker logs -f $CONTAINER_NAME
+}
+
+# === Kiểm tra earning theo log ===
+function check_earning_status() {
+  echo "💰 Trạng thái earning gần nhất:"
+  docker logs $CONTAINER_NAME 2>/dev/null | grep balance_ready | tail -n 5
+}
+
+# === Gỡ toàn bộ hệ thống ===
+function uninstall_all() {
+  echo "🧹 Đang gỡ bỏ toàn bộ..."
+  docker stop $CONTAINER_NAME 2>/dev/null
+  docker rm $CONTAINER_NAME 2>/dev/null
+  rm -f $ENV_FILE
+  sudo apt purge -y docker.io
+  sudo apt autoremove -y
+  echo "✅ Đã xoá toàn bộ hệ thống."
+}
+
+# === Cập nhật script menu (không mất dữ liệu) ===
+function update_script() {
+  echo "⬇️ Đang cập nhật script..."
+  wget -q $RAW_URL -O $SCRIPT_PATH && chmod +x $SCRIPT_PATH
+  echo "✅ Script đã được cập nhật!"
+}
+
+# === Thiết lập alias gọi menu ip-menu nếu chưa có ===
+function setup_alias() {
+  if ! grep -q "alias ip-menu=" ~/.bashrc; then
+    echo "alias ip-menu='bash ~/install_iproyal.sh'" >> ~/.bashrc
+    echo "✅ Đã thêm alias 'ip-menu'."
+    source ~/.bashrc
+  fi
+}
+
+# === Menu chính ===
+function main_menu() {
+  while true; do
+    echo -e "\\n🎛️ MENU IPRoyal Pawns CLI:"
+    echo "1) Kiểm tra container"
+    echo "2) Xem log"
+    echo "3) Kiểm tra earning"
+    echo "4) Cài đặt lại"
+    echo "5) Gỡ bỏ toàn bộ"
+    echo "6) Cập nhật script"
+    echo "0) Thoát"
+    read -p "👉 Chọn chức năng: " choice
+    case $choice in
+      1) check_container ;;
+      2) view_logs ;;
+      3) check_earning_status ;;
+      4) setup ;;
+      5) uninstall_all ;;
+      6) update_script ;;
+      0) echo "👋 Tạm biệt!"; exit 0 ;;
+      *) echo "❓ Lựa chọn không hợp lệ!" ;;
+    esac
+  done
+}
+
+# === Bắt đầu ===
+setup_alias
+main_menu
+"""
+
+# Save the final script under the required filename
+install_script_path = "/mnt/data/install_iproyal.sh"
+with open(install_script_path, "w") as f:
+    f.write(final_named_script)
+
+install_script_path

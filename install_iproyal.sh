@@ -5,7 +5,7 @@ ENV_FILE="$HOME/.iproyal.env"
 CONTAINER_NAME="iproyal-pawns"
 IMAGE_NAME="iproyal/pawns-cli:latest"
 SCRIPT_PATH="$HOME/install_iproyal.sh"
-RAW_URL="https://chat.openai.com/sandbox/attachments/install_iproyal.sh"
+RAW_URL="https://raw.githubusercontent.com/blackmagicc093/auto_install_iproyal_pawns/refs/heads/main/install_iproyal.sh"
 
 # === MÀU SẮC ===
 GREEN='\033[1;32m'
